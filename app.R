@@ -3,13 +3,26 @@ library(shinydashboardPlus)
 library(DT)
 library(dplyr)
 library(plotly)
+library(tidyverse)
 
 #link function
 createLink <- function(val) {
     paste0('<a href="',val,'" target="_blank" class="btn btn-primary">Info</a>')
 }
-
 #INput data 
+df <- tibble(file = list.files(pattern = ".csv")) %>% # Define list of file names that contain csv
+  mutate(data = map(file, read_csv), # Read in data using file names
+         data = map(data, ~mutate_all(.x, as.character))) %>% # Convert all features to character for unnesting 
+  unnest() %>% # Unnest the data to create a dataset containing all files 
+  mutate(url_link = createLink(Link)) # Create links 
+
+# Filter the data frame to select each file 
+lux <- df %>% filter(str_detect(file, "lux")) %>% select(-file)
+makeups <- df %>% filter(str_detect(file, "makeup")) %>% select(-file)
+hou <- df %>% filter(str_detect(file, "hou")) %>% select(-file)
+jew <- df %>% filter(str_detect(file, "jew")) %>% select(-file)
+ap <- df %>% filter(str_detect(file, "ap")) %>% select(-file)
+
 { filenames <- list.files(pattern = ".csv", path = "data")
   for (i in 1:length(filenames)) {
     filename <- stringr::str_replace_all(filenames[i], ".csv", "")
@@ -33,31 +46,7 @@ createLink <- function(val) {
   ap <- makeups[,-which(names(ap) %in% c("Link"))]
 }
 
-# lux <- data.frame(read.csv("data/lux.csv",
-#                            header = TRUE,
-#                            fileEncoding = "UTF-8-BOM",
-#                            stringsAsFactors = TRUE))
-# 
-# makeups <- data.frame(read.csv("data/makeups.csv",
-#                            header = TRUE,
-#                            fileEncoding = "UTF-8-BOM",
-#                            stringsAsFactors = TRUE))
-# 
-# hou <- data.frame(read.csv("data/hou.csv",
-#                                header = TRUE,
-#                                fileEncoding = "UTF-8-BOM",
-#                                stringsAsFactors = TRUE))
-# 
-# jew<- data.frame(read.csv("data/jew.csv",
-#                            header = TRUE,
-#                            fileEncoding = "UTF-8-BOM",
-#                            stringsAsFactors = TRUE))
-# 
-# ap<- data.frame(read.csv("data/ap.csv",
-#                           header = TRUE,
-#                           fileEncoding = "UTF-8-BOM",
-#                           stringsAsFactors = TRUE))                  
-    
+
 
 
 ### creat a function to develop the same table
